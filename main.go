@@ -1,21 +1,26 @@
 package main
 
-import "strings"
+import (
+	"fmt"
+	"log"
+	"os"
+)
+const frameHeaderSize = 10
 
-func mustFrameBeInSequence(id string) bool {
-	if id != "TXXX" && strings.HasPrefix(id, "T") {
-		return false
-	}
-
-	switch id {
-	case "MCDI", "ETCO", "SYTC", "RVRB", "MLLT", "PCNT", "RBUF", "POSS", "OWNE", "SEEK", "ASPI":
-	case "IPLS", "RVAD": // Specific ID3v2.3 frames.
-		return false
-	}
-
-	return true
+func getByteSlice(size int) []byte {
+	return make([]byte, size)
 }
 func main(){
-	b := mustFrameBeInSequence("APIC")
-	println(b)
+	file, err := os.Open("file")
+	if err != nil {
+		log.Fatal(err)
+	}
+	buf := getByteSlice(32 * 1024)
+	fhBuf := buf[:frameHeaderSize]
+	if _, err := file.Read(fhBuf); err != nil {
+		log.Fatal(err)
+	}
+
+	id := string(fhBuf[:4])
+	fmt.Println(id)
 }
